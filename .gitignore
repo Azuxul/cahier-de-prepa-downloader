@@ -1,6 +1,7 @@
 .idea/
 venv/
 src/output/
+src/credentials.py
 
 
 # Created by https://www.gitignore.io/api/python,pycharm
