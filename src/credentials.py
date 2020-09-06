@@ -1,0 +1,2 @@
+LOGIN = "***USERNAME***"
+PASSWORD = "***PASSWORD***"
