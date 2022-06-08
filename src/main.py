@@ -1,6 +1,5 @@
-import credentials
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
+#  -*- coding: utf-8 -*-
 
 """
 Copyright (C) 2019-2020  Lancelot H. (Azuxul)
@@ -20,17 +19,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 """
 
 
+import json
+import os
+import re
 
 import requests
 from bs4 import BeautifulSoup
-import json
-import re
-import os
-from pathlib import Path
 
-BASE_URL = "https://cahier-de-prepa.fr/PT-Joliot-Curie/" # Cahier de prepa URL
-BASE_DIR = "output" # Output directory, where the downloaded files will go
-USERLOG = False # True to login on cahier-de-prepa, Flase to stay unconnected
+import credentials
+
+BASE_URL = "https://cahier-de-prepa.fr/PT-Joliot-Curie/"  # Cahier de prepa URL
+BASE_DIR = "output"  # Output directory, where the downloaded files will go
+USERLOG = False  # True to login on cahier-de-prepa, False to stay unconnected
 USER = credentials.LOGIN
 PASSWORD = credentials.PASSWORD
 
@@ -99,7 +99,9 @@ for p in docs.keys():
     print("Page ", p, ": ", pages[p].replace(" / ", "/"))
 
     for d in docs[p]:
-        dl = session.get(BASE_URL + "/download?id=" + str(d))
+        dl = session.get(BASE_URL + "/download?id=" + str(d) + "&dl")
+        # &dl argument is needed because some documents offers previews
+        # (some videos for example)
 
         access = True
 
@@ -117,13 +119,12 @@ for p in docs.keys():
 
             title = re.sub(r"[:?\"<>/|]", "", re.sub(r"[*]", "(etoile)", title))
 
-            direct = BASE_DIR + u"\\" + title + u"\\" + re.sub(r"[:*?\"<>|]", "", pages[p].replace(" / ", u"\\", -1).replace(" /", u"\\", -1))
+            direct = os.path.join(BASE_DIR, title, re.sub(r"[:*?\"<>|]", "", os.path.join(*[i.strip() for i in pages[p].split("/")]) ))
 
-            if not os.path.exists(u"\\\\?\\" + os.getcwd() + u"\\" + direct):
-                Path(u"\\\\?\\" + os.getcwd() + u"\\" + direct).mkdir(parents=True)
+            os.makedirs(os.path.join(os.getcwd(), direct), exist_ok=True)
 
-            file_name = re.sub(r"[:*?\"<>/|]", "", file_name).encode('latin-1').decode('utf-8').replace(" ", " ", -1)
-            with open(u"\\\\?\\" + os.getcwd() + u"\\" + direct + u"\\" + str(file_name), "wb") as file:
+            file_name = re.sub(r"[:*?\"<>/|]", "", file_name).encode('latin-1').decode('utf-8')
+            with open(os.path.join(os.getcwd(), direct, str(file_name)), "wb") as file:
                 file.write(dl.content)
 
             nbDoc += 1
