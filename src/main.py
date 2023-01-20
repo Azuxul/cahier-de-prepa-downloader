@@ -67,9 +67,13 @@ def explore(explore_page):
             return
     else:
         return
-
-    pages[explore_page] = sec.find("span", "nom").get_text().rstrip()
-
+      
+    try:
+      pages[explore_page] = sec.find("span", "nom").get_text().rstrip()
+    except:
+      print(explore_page, "Vous n'avez pas accès à cette page.")
+      return
+    
     for r in sec.findAll("a", href=re.compile("rep=")):
         page = int(r["href"].replace("docs", "").replace("?rep=", ""))
         if page not in pages:
