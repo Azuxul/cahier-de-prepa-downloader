@@ -28,7 +28,12 @@ from bs4 import BeautifulSoup
 
 from cdpDumpingUtils.version import __version__
 
-output_dir = None
+import os
+import configparser
+
+config_file = 'cdpDumpingUtils.cfg'
+
+output_dir = os.getcwd()
 base_url = None
 username = None
 password = None
@@ -44,29 +49,37 @@ def start():
     # username = credentials.LOGIN
     # password = credentials.PASSWORD
 
-    log_user = username is not None and password is not None
+    log_user = username is not None and password is not None and username != "" and password != ""
 
     # Remove trailing slash if present
     if(base_url.endswith("/")):
         base_url = base_url[:-1]
 
-    data = {
-        "csrf-token": "undefined",
-        "login": username,
-        "motdepasse": password,
-        "connexion": "1"
-    }
-
     session = requests.Session()
     jsonRep = None
 
     if log_user:
+        print("Connexion en cours...")
+
+        data = {
+            "csrf-token": "undefined",
+            "login": username,
+            "motdepasse": password,
+            "connexion": "1"
+        }
+
         response = session.post(base_url + "/ajax.php", data=data)
 
         if response.status_code != 200:
+            print("Erreur lors de la connexion")
             exit()
 
         jsonRep = json.loads(response.text)
+        if jsonRep is not None and jsonRep["etat"] != "ok":
+            print("Informations de connexion incorectes")
+            exit()
+
+        print("Connexion réussie")
 
     pages = {}
     docs = {}
@@ -103,16 +116,12 @@ def start():
     sec = BeautifulSoup(rep.text, features="html5lib").find("title")
     title = sec.text
 
-    if jsonRep is not None and jsonRep["etat"] != "ok":
-        print("Informations de connexion incorectes")
-        exit()
-
-    print("Exploration de ", title, " en cours...")
+    print("Exploration de", title, "en cours...")
 
     for i in range(100):
         explore(i)
 
-    print("Exploration terminée. (", len(pages), " pages trouvées )")
+    print("Exploration terminée. (", len(pages), "pages trouvées )")
     print()
     print("Téléchargement des documents...")
 
@@ -120,7 +129,7 @@ def start():
     nbDocRef = 0
 
     for p in docs.keys():
-        print("Page ", p, ": ", pages[p].replace(" / ", "/"))
+        print("Page", p, ":", pages[p].replace(" / ", "/"))
 
         for d in docs[p]:
             dl = session.get(base_url + "/download?id=" + str(d) + "&dl")
@@ -138,7 +147,7 @@ def start():
                         nbDocRef += 1
 
             if access:
-                print("Document ", d, ": ", docs[p][d])
+                print("Document", d, ":", docs[p][d])
                 file_name = dl.headers["Content-Disposition"].replace("filename=", "").replace("attachment; ", "").replace("inline; ", "")
 
                 title = re.sub(r"[:?\"<>/|]", "", re.sub(r"[*]", "(etoile)", title))
@@ -154,20 +163,84 @@ def start():
                 nbDoc += 1
         print("--")
 
-    print(nbDoc, " documents téléchargés")
-    print(nbDocRef, " documents protégés")
+    print(nbDoc, "documents téléchargés")
+    print(nbDocRef, "documents protégés")
 
+def prompt_config_setup():
+    global config_file, output_dir
+
+    config_path = os.path.join(output_dir, config_file)
+    
+    if os.path.isfile(config_path):
+        # Load the existing config file
+        config = configparser.ConfigParser()
+        config.read(config_path)
+    else:
+        # Create the output directory if it doesn't exist
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
+
+        # Create a new config file
+        config = configparser.ConfigParser()
+        config["cahier_de_prepa"] = {}
+
+    url = input("URL de l'instance cahier de prepa : ")
+    if url is not None and url != "":
+        config["cahier_de_prepa"]["url"] = url
+
+    login = input("Connexion avec compte utilisateur ? (y/n): ")
+    if login.lower() == "y":
+        username = input("Nom d'utilisateur : ")
+        password = input("Mot de passe : ")
+        config["cahier_de_prepa.credentials"] = {"username": username, "password": password}
+    else:
+        config["cahier_de_prepa.credentials"] = {"username": '', "password": ''}
+
+    # Save the config file
+    with open(config_path, "w") as f:
+        config.write(f)
+        
+def load_config(prompt_no_config=False):
+    global config_file, output_dir, base_url, username, password
+
+    config_path = os.path.join(output_dir, config_file)
+    
+    if os.path.isfile(config_path):
+        # Load the existing config file
+        config = configparser.ConfigParser()
+        config.read(config_path)
+
+        if "cahier_de_prepa" in config:
+            
+            base_url = config["cahier_de_prepa"]["url"]
+            
+            if "username" in config["cahier_de_prepa.credentials"] and "password" in config["cahier_de_prepa.credentials"]:
+                username = config["cahier_de_prepa.credentials"]["username"]
+                password = config["cahier_de_prepa.credentials"]["password"]
+        else:
+            print("Impossible de lire le fichier de configuration")
+            exit()
+
+    else:
+        if prompt_no_config:
+            prompt_config_setup()
+            load_config()
+        else:
+            print("Impossible de trouver le fichier de configuration")
+            exit()
+        
+    
 def main(args=None):
     global output_dir, base_url, username, password, verbose
 
     parser = argparse.ArgumentParser()
     optional = parser.add_argument_group("arguments optionnels")
+    optional.add_argument("--edit-cfg", help="Modification du fichier de configuration", action="store_true")
     optional.add_argument("-v", "--verbose", help="Augmente la quantité de texte affiché", action="store_true")
     optional.add_argument("-l", "--username", help="Nom d'utilisateur du compte cahier de prepa (utilisation sans compte possible)")
     optional.add_argument("-p", "--password", help="Mot de passe de connexion cahier de prepa")
-    required = parser.add_argument_group("arguments requis")
-    required.add_argument("-o", "--output", help="Chemin d'acces du dossier de sortie", required=True)
-    required.add_argument("-u", "--url", help="URL de l'instance cahier de prepa", required=True)
+    optional.add_argument("-o", "--output", help="Chemin d'acces du dossier de sortie, par default le dossier actuel")
+    optional.add_argument("-u", "--url", help="URL de l'instance cahier de prepa")
     
     args = parser.parse_args()
 
@@ -176,10 +249,23 @@ def main(args=None):
 
     verbose = args.verbose
 
-    output_dir = args.output
-    base_url = args.url
-    username = args.username
-    password = args.password
+    if args.output is not None:
+        output_dir = args.output
+
+    if args.edit_cfg:
+        prompt_config_setup()
+        exit()
+
+    load_config(prompt_no_config=args.url is None)
+
+    if args.url is not None:
+        base_url = args.url
+
+    if args.username is not None:
+        username = args.username
+
+    if args.password is not None:
+        password = args.password
 
     print("cdpDumpingUtils v", __version__)
     print()

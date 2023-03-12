@@ -39,30 +39,34 @@ cdpDumpingUtils -h
 ```
 
 ```
-usage: cdpDumpingUtils [-h] [-v] [-l USERNAME] [-p PASSWORD] -o OUTPUT -u URL
+usage: cdpDumpingUtils [-h] [--edit-cfg] [-v] [-l USERNAME] [-p PASSWORD] [-o OUTPUT] [-u URL]
 
 options:
   -h, --help            show this help message and exit
 
 arguments optionnels:
+  --edit-cfg            Modification du fichier de configuration
   -v, --verbose         Augmente la quantité de texte affiché
   -l USERNAME, --username USERNAME
                         Nom d'utilisateur du compte cahier de prepa (utilisation sans compte possible)
   -p PASSWORD, --password PASSWORD
                         Mot de passe de connexion cahier de prepa
-
-arguments requis:
   -o OUTPUT, --output OUTPUT
-                        Chemin d'acces du dossier de sortie
+                        Chemin d'acces du dossier de sortie, par default le dossier actuel
   -u URL, --url URL     URL de l'instance cahier de prepa
 ```
 
-To run cdpDumpingUtils without an account:
+To run cdpDumpingUtils with a config file (if no config file it will be created) :
+```
+cdpDumpingUtils -o ./output
+```
+
+To run cdpDumpingUtils and specify an url without an account:
 ```
 cdpDumpingUtils -u https://cahier-de-prepa.fr/XXX/ -o ./output
 ```
 
-To run cdpDumpingUtils with an account:
+To run cdpDumpingUtils  and specify an url  with an account:
 ```
 cdpDumpingUtils -u https://cahier-de-prepa.fr/XXX/ -l username -p password -o ./output
 ```
