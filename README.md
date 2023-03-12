@@ -9,6 +9,14 @@ DISCLAIMER : THIS TOOL IS NOT MEANT TO DEFEAT INTELLECTUAL PROPERTY, IT IS JUST 
 
 Install [Python3](https://www.python.org/downloads/) 
 
+- Automatic installation (recommended)
+
+```
+pip install cdpDumpingUtils
+```
+
+- Manual installation
+
 Download the repository: 
 
 ```
@@ -21,15 +29,17 @@ Install the dependency:
 pip install -r requirements.txt
 ```
 
+Now you can use cdpDumpingUtils but instead of the `cdpDumpingUtils` command you have to use this command: `python cdpDumpingUtils/main.py`
+
 ## Usage
 
 
 ```
-python cdpDumpingUtils/main.py -h
+cdpDumpingUtils -h
 ```
 
 ```
-usage: main.py [-h] [-v] [-l USERNAME] [-p PASSWORD] -o OUTPUT -u URL
+usage: cdpDumpingUtils [-h] [-v] [-l USERNAME] [-p PASSWORD] -o OUTPUT -u URL
 
 options:
   -h, --help            show this help message and exit
@@ -49,12 +59,12 @@ arguments requis:
 
 To run cdpDumpingUtils without an account:
 ```
-python cdpDumpingUtils/main.py -u https://cahier-de-prepa.fr/XXX/ -o ./output
+cdpDumpingUtils -u https://cahier-de-prepa.fr/XXX/ -o ./output
 ```
 
 To run cdpDumpingUtils with an account:
 ```
-python cdpDumpingUtils/main.py -u https://cahier-de-prepa.fr/XXX/ -l username -p password -o ./output
+cdpDumpingUtils -u https://cahier-de-prepa.fr/XXX/ -l username -p password -o ./output
 ```
 
 ## Limitations
@@ -64,7 +74,3 @@ This tool may be unusable if cahier-de-prepa is updated. This tool only download
 ## License
 
 This project is licensed under the GNU General Public License v3.0
-
-
-
-

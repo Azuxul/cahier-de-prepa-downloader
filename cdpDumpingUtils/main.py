@@ -26,6 +26,7 @@ import re
 import requests
 from bs4 import BeautifulSoup
 
+from cdpDumpingUtils.version import __version__
 
 output_dir = None
 base_url = None
@@ -34,7 +35,7 @@ password = None
 
 verbose = False
 
-def main():
+def start():
     global output_dir, base_url, username, password, verbose
 
     # base_url = "https://cahier-de-prepa.fr/PT-Joliot-Curie/"  # Cahier de prepa URL
@@ -156,7 +157,8 @@ def main():
     print(nbDoc, " documents téléchargés")
     print(nbDocRef, " documents protégés")
 
-if __name__ == "__main__":
+def main(args=None):
+    global output_dir, base_url, username, password, verbose
 
     parser = argparse.ArgumentParser()
     optional = parser.add_argument_group("arguments optionnels")
@@ -179,7 +181,11 @@ if __name__ == "__main__":
     username = args.username
     password = args.password
 
-    print("cdpDumpingUtils v0.2")
+    print("cdpDumpingUtils v", __version__)
     print()
 
+    start()
+
+if __name__ == "__main__":
     main()
+    
