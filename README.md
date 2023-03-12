@@ -2,7 +2,7 @@
 
 This project exists to dump files form cahier-de-prepa.fr web site. While some students try to recover every file manually, this tool can export most of the files.
 
-DISCLAMER : THIS TOOL IS NOT MEANT TO DEFEAT INTELECTUAL PROPERITY, IT IS JUST A TOOL TO HELP SUTUDENTS.
+DISCLAIMER : THIS TOOL IS NOT MEANT TO DEFEAT INTELLECTUAL PROPERTY, IT IS JUST A TOOL TO HELP STUDENTS.
 
 
 
@@ -14,8 +14,6 @@ DISCLAMER : THIS TOOL IS NOT MEANT TO DEFEAT INTELECTUAL PROPERITY, IT IS JUST A
 
 - requests >= 2.22.0
 
-- pathlib >= 1.0.1
-
 ## Installation
 
 Download the repository : 
@@ -26,7 +24,7 @@ Enter the cahier-de-prepa URL and the others settings in main.py
 
 `BASE_URL = "https://cahier-de-prepa.fr/PT-Joliot-Curie/" # Cahier de prepa URL
 BASE_DIR = "output" # Output directory, where the downloaded files will go
-USERLOG = False # True to login on cahier-de-prepa, Flase to stay unconnected`
+USERLOG = False # True to login on cahier-de-prepa, False to stay unconnected`
 
 
 
