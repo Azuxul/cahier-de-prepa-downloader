@@ -5,53 +5,61 @@ This project exists to dump files form cahier-de-prepa.fr web site. While so
 DISCLAIMER : THIS TOOL IS NOT MEANT TO DEFEAT INTELLECTUAL PROPERTY, IT IS JUST A TOOL TO HELP STUDENTS.
 
 
-
-## Dependency
-
-- Python 3.6.6
-
-- bs4 >= 0.0.1
-
-- requests >= 2.22.0
-
 ## Installation
 
-Download the repository : 
+Install [Python3](https://www.python.org/downloads/) 
 
-`git clone https://github.com/Azuxul/cdpDumpingUtils.git`
+Download the repository: 
 
-Enter the cahier-de-prepa URL and the others settings in main.py
+```
+git clone https://github.com/Azuxul/cdpDumpingUtils.git
+```
 
-`BASE_URL = "https://cahier-de-prepa.fr/PT-Joliot-Curie/" # Cahier de prepa URL
-BASE_DIR = "output" # Output directory, where the downloaded files will go
-USERLOG = False # True to login on cahier-de-prepa, False to stay unconnected`
+Install the dependency:
 
-
-
-Enter your cahier-de-prepa credentials if USERLOG is set to True
-
-`LOGIN = "***USERNAME***"
-PASSWORD = "***PASSWORD***"`
-
-
+```
+pip install -r requirements.txt
+```
 
 ## Usage
 
-You can change parameters, see Installation section
 
+```
+python cdpDumpingUtils/main.py -h
+```
 
+```
+usage: main.py [-h] [-v] [-l USERNAME] [-p PASSWORD] -o OUTPUT -u URL
 
-To run the tool 
+options:
+  -h, --help            show this help message and exit
 
-`python src/main.py`
+arguments optionnels:
+  -v, --verbose         Augmente la quantité de texte affiché
+  -l USERNAME, --username USERNAME
+                        Nom d'utilisateur du compte cahier de prepa (utilisation sans compte possible)
+  -p PASSWORD, --password PASSWORD
+                        Mot de passe de connexion cahier de prepa
 
+arguments requis:
+  -o OUTPUT, --output OUTPUT
+                        Chemin d'acces du dossier de sortie
+  -u URL, --url URL     URL de l'instance cahier de prepa
+```
 
+To run cdpDumpingUtils without an account:
+```
+python cdpDumpingUtils/main.py -u https://cahier-de-prepa.fr/XXX/ -o ./output
+```
+
+To run cdpDumpingUtils with an account:
+```
+python cdpDumpingUtils/main.py -u https://cahier-de-prepa.fr/XXX/ -l username -p password -o ./output
+```
 
 ## Limitations
 
 This tool may be unusable if cahier-de-prepa is updated. This tool only download documents. Grades, calendars and other features of cahier-de-prepa are not implemented.
-
-
 
 ## License
 
