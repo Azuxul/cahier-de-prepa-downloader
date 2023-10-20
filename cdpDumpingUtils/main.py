@@ -40,6 +40,12 @@ password = None
 
 verbose = False
 
+warning_message = [
+    "Mauvais paramètre d'accès à cette page.",
+    "Ce contenu est protégé. Vous devez vous connecter pour l'afficher.",
+    "Vous n'avez pas accès à cette page."
+]
+
 def start():
     global output_dir, base_url, username, password, verbose
 
@@ -94,7 +100,7 @@ def start():
 
         if sec is not None:
             txt = sec.find("div", "warning")
-            if txt is not None and (txt.string == "Mauvais paramètre d'accès à cette page." or txt.string == "Ce contenu est protégé. Vous devez vous connecter pour l'afficher."):
+            if txt is not None and txt.string in warning_message:
                 return
         else:
             return
@@ -142,7 +148,7 @@ def start():
                 page = BeautifulSoup(dl.text, features="html5lib").find("section")
                 if page is not None:
                     txt = page.find("div", "warning")
-                    if txt is not None and (txt.string == "Mauvais paramètre d'accès à cette page." or txt.string == "Ce contenu est protégé. Vous devez vous connecter pour l'afficher."):
+                    if txt is not None and txt.string in warning_message:
                         access = False
                         nbDocRef += 1
 
