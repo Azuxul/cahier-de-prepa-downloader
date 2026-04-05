@@ -92,10 +92,12 @@ def start():
 
 
     def explore(explore_page):
-        if verbose:
-            print("Exploring ", base_url + "/docs?rep=" + str(explore_page))
+        url = base_url + "/docs?rep=" + str(explore_page)
         
-        rep = session.get(base_url + "/docs?rep=" + str(explore_page))
+        if verbose:
+            print("Exploring ", url)
+        
+        rep = session.get(url)
         sec = BeautifulSoup(rep.text, features="html5lib").find("section")
 
         if sec is not None:
@@ -107,15 +109,15 @@ def start():
 
         pages[explore_page] = sec.find("span", "nom").get_text().rstrip()
 
-        for r in sec.findAll("a", href=re.compile("rep=")):
+        for r in sec.find_all("a", href=re.compile("rep=")):
             page = int(r["href"].replace("docs", "").replace("?rep=", ""))
             if page not in pages:
                 explore(page)
 
         docs[explore_page] = {}
-        for d in sec.findAll("p", "doc"):
-            id = int(d.find("a", href=re.compile("download"))["href"].replace("download?id=", ""))
-            docs[explore_page][id] = d.find("span", "nom").string
+        for d in sec.find_all("p", "doc"):
+            download_args: str = d.find("a", href=re.compile("download"))["href"].replace("download?id=", "")
+            docs[explore_page][download_args] = d.find("span", "nom").string
 
 
     rep = session.get(base_url)
@@ -138,7 +140,7 @@ def start():
         print("Page", p, ":", pages[p].replace(" / ", "/"))
 
         for d in docs[p]:
-            dl = session.get(base_url + "/download?id=" + str(d) + "&dl")
+            dl = session.get(base_url + "/download?id=" + d + "&dl")
             # &dl argument is needed because some documents offers previews
             # (some videos for example)
 
