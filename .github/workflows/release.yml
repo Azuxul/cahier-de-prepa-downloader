@@ -1,0 +1,91 @@
+name: Release
+
+# Triggered by a push to main that bumps cdpDumpingUtils/version.py.
+# Bump the version, merge to main, and this workflow tags the release,
+# publishes the sdist/wheel to PyPI, and creates a GitHub Release.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "cdpDumpingUtils/version.py"
+
+jobs:
+  check-version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.get_version.outputs.version }}
+      tag_exists: ${{ steps.check_tag.outputs.exists }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: get_version
+        run: |
+          VERSION=$(python3 -c "exec(open('cdpDumpingUtils/version.py').read()); print(__version__)")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - id: check_tag
+        run: |
+          if git ls-remote --tags origin | grep -q "refs/tags/v${{ steps.get_version.outputs.version }}$"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build:
+    needs: check-version
+    if: needs.check-version.outputs.tag_exists == 'false'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.x"
+
+      - name: Install build tool
+        run: pip install build
+
+      - name: Build sdist and wheel
+        run: python -m build
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  # Requires a PyPI Trusted Publisher configured for this repo/workflow
+  # (pypi.org project settings -> Publishing -> Add a new publisher) and
+  # a "pypi" GitHub environment. No secrets needed: auth is via OIDC.
+  publish-pypi:
+    needs: [check-version, build]
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/cdpDumpingUtils/${{ needs.check-version.outputs.version }}
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: pypa/gh-action-pypi-publish@release/v1
+
+  github-release:
+    needs: [check-version, build, publish-pypi]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v${{ needs.check-version.outputs.version }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+          files: dist/*
